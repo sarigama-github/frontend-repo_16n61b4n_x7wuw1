@@ -43,4 +43,14 @@
     --tw-exit-translate-x: initial;
     --tw-exit-translate-y: initial;
   }
+
+  /* Marquee utilities for partner logos */
+  @keyframes scroll-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .marquee-left {
+    animation: scroll-left 25s linear infinite;
+    will-change: transform;
+  }
 }

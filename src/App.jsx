@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Spline from '@splinetool/react-spline'
-import { Shield, Lock, ArrowRight, Menu, Moon, Sun, CheckCircle2 } from 'lucide-react'
+import { Shield, Lock, ArrowRight, Menu, Moon, Sun, CheckCircle2, MessageCircle, Bell, ArrowUpRight } from 'lucide-react'
 
 function useTheme() {
   const [theme, setTheme] = useState(() => {
@@ -20,7 +20,7 @@ function useTheme() {
 
 function Navbar({ theme, setTheme }) {
   return (
-    <header className="fixed top-0 inset-x-0 z-50">
+    <header className="fixed top-0 inset-x-0 z-[60]">
       <div className="mx-auto max-w-7xl px-6 py-4">
         <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-900/60 dark:bg-slate-900/60 backdrop-blur supports-[backdrop-filter]:bg-slate-900/40 px-4 py-3">
           <div className="flex items-center gap-3">
@@ -36,7 +36,8 @@ function Navbar({ theme, setTheme }) {
           <div className="hidden md:flex items-center gap-6 text-sm">
             <a className="text-slate-300 hover:text-white transition" href="#solutions">Solutions</a>
             <a className="text-slate-300 hover:text-white transition" href="#platform">Platform</a>
-            <a className="text-slate-300 hover:text-white transition" href="#pricing">Pricing</a>
+            <a className="text-slate-300 hover:text-white transition" href="#partners">Partners</a>
+            <a className="text-slate-300 hover:text-white transition" href="#bot">CyberNews Bot</a>
             <a className="text-slate-300 hover:text-white transition" href="#contact">Contact</a>
           </div>
 
@@ -57,6 +58,45 @@ function Navbar({ theme, setTheme }) {
         </div>
       </div>
     </header>
+  )
+}
+
+function ParallaxBackground() {
+  const [offset, setOffset] = useState(0)
+
+  useEffect(() => {
+    const onScroll = () => setOffset(window.scrollY || 0)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // Speeds for layers
+  const s1 = offset * 0.15
+  const s2 = offset * 0.3
+  const s3 = offset * 0.45
+
+  return (
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      {/* Grid dots */}
+      <div
+        className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.15)_1px,transparent_1px)] [background-size:24px_24px]"
+        style={{ transform: `translateY(${s1 * -1}px)` }}
+      />
+
+      {/* Brand glow blobs */}
+      <div
+        className="absolute -top-40 -left-40 h-[520px] w-[520px] rounded-full blur-3xl"
+        style={{ background: 'radial-gradient(45% 45% at 50% 50%, rgba(16,185,129,0.35), rgba(16,185,129,0) 70%)', transform: `translateY(${s2}px)` }}
+      />
+      <div
+        className="absolute top-1/3 -right-40 h-[520px] w-[520px] rounded-full blur-3xl"
+        style={{ background: 'radial-gradient(45% 45% at 50% 50%, rgba(16,185,129,0.25), rgba(16,185,129,0) 70%)', transform: `translateY(${s3 * -1}px)` }}
+      />
+
+      {/* Vertical gradient vignette */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-transparent to-slate-950" />
+    </div>
   )
 }
 
@@ -146,6 +186,120 @@ function Features() {
   )
 }
 
+function Partners() {
+  const logos = useMemo(() => [
+    { name: 'Sentra', svg: (
+      <svg viewBox="0 0 100 24" className="h-6 w-auto fill-current"><text x="0" y="18" className="font-semibold" fontSize="18">Sentra</text></svg>
+    )},
+    { name: 'OctaNet', svg: (
+      <svg viewBox="0 0 100 24" className="h-6 w-auto fill-current"><text x="0" y="18" fontSize="18">OctaNet</text></svg>
+    )},
+    { name: 'Nimbus', svg: (
+      <svg viewBox="0 0 100 24" className="h-6 w-auto fill-current"><text x="0" y="18" fontSize="18">Nimbus</text></svg>
+    )},
+    { name: 'VectorX', svg: (
+      <svg viewBox="0 0 100 24" className="h-6 w-auto fill-current"><text x="0" y="18" fontSize="18">VectorX</text></svg>
+    )},
+    { name: 'Cloudly', svg: (
+      <svg viewBox="0 0 100 24" className="h-6 w-auto fill-current"><text x="0" y="18" fontSize="18">Cloudly</text></svg>
+    )},
+    { name: 'Cortec', svg: (
+      <svg viewBox="0 0 100 24" className="h-6 w-auto fill-current"><text x="0" y="18" fontSize="18">Cortec</text></svg>
+    )},
+  ], [])
+
+  // Duplicate to create seamless loop
+  const row = [...logos, ...logos]
+
+  return (
+    <section id="partners" className="py-16">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-white font-semibold text-lg">Trusted by modern teams</h2>
+          <div className="h-px flex-1 mx-6 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          <span className="text-xs text-slate-400">Partners</span>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40">
+          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-slate-950 to-transparent pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-slate-950 to-transparent pointer-events-none" />
+
+          <div className="flex gap-12 whitespace-nowrap px-6 py-6 marquee-left">
+            {row.map((logo, idx) => (
+              <div
+                key={`${logo.name}-${idx}`}
+                className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition"
+              >
+                <div className="h-8 w-8 rounded-lg bg-brand/10 text-brand grid place-items-center font-semibold">{logo.name[0]}</div>
+                <div className="text-slate-300/80">
+                  <div className="h-6 w-auto opacity-80">
+                    {logo.svg}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function CyberNewsBot() {
+  return (
+    <section id="bot" className="py-20">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="relative overflow-hidden rounded-3xl border border-brand/30 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-10">
+          <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-brand/30 via-emerald-400/10 to-transparent blur-2xl pointer-events-none" />
+          <div className="relative grid lg:grid-cols-2 gap-10 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-800/60 px-3 py-1 text-xs text-slate-300">
+                <MessageCircle className="w-3.5 h-3.5 text-brand" /> WhatsApp Bot
+              </div>
+              <h3 className="mt-4 text-2xl sm:text-3xl font-semibold text-white">Get real‑time CyberNews alerts on WhatsApp</h3>
+              <p className="mt-3 text-slate-300">Daily threat briefs, breaking CVEs, and mitigation tips sent straight to your phone. Opt‑in, zero spam, unsubscribe anytime.</p>
+
+              <ul className="mt-6 space-y-2 text-sm text-slate-300">
+                <li className="inline-flex items-center gap-2"><Bell className="w-4 h-4 text-brand" /> Priority alerts for critical vulnerabilities</li>
+                <li className="inline-flex items-center gap-2"><Lock className="w-4 h-4 text-brand" /> Privacy‑first, end‑to‑end encrypted delivery</li>
+              </ul>
+
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <a
+                  href="https://wa.me/15551234567?text=Subscribe%20me%20to%20AegisGuard%20CyberNews" target="_blank" rel="noreferrer"
+                  className="inline-flex items-center justify-center rounded-xl px-5 py-3 bg-brand text-slate-900 font-semibold hover:brightness-110 transition"
+                >
+                  Open WhatsApp
+                  <ArrowUpRight className="w-4 h-4 ml-2" />
+                </a>
+                <a href="#" className="inline-flex items-center justify-center rounded-xl px-5 py-3 border border-white/10 text-slate-200 hover:text-white hover:border-white/20 transition">
+                  Learn how it works
+                </a>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="aspect-[4/3] w-full rounded-2xl border border-white/10 bg-slate-900/50 p-6 grid place-items-center">
+                <div className="text-center">
+                  <div className="mx-auto h-24 w-24 rounded-2xl bg-brand/15 text-brand grid place-items-center">
+                    <MessageCircle className="w-10 h-10" />
+                  </div>
+                  <p className="mt-4 text-slate-300">Scan to subscribe</p>
+                  <div className="mt-3 inline-flex rounded-lg bg-white p-2">
+                    {/* Simple placeholder QR composed of squares */}
+                    <div className="h-28 w-28 bg-[linear-gradient(90deg,#000_10px,transparent_10px),linear-gradient(#000_10px,transparent_10px)] [background-size:14px_14px]" />
+                  </div>
+                </div>
+              </div>
+              <div className="pointer-events-none absolute -inset-1 rounded-2xl bg-gradient-to-tr from-brand/10 to-transparent blur-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function CTA() {
   return (
     <section id="contact" className="py-20">
@@ -173,11 +327,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 dark:text-slate-100">
+      <ParallaxBackground />
       <Navbar theme={theme} setTheme={setTheme} />
 
       <main>
         <Hero />
         <Features />
+        <Partners />
+        <CyberNewsBot />
         <CTA />
 
         <footer className="py-10">
