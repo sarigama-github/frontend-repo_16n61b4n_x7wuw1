@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Spline from '@splinetool/react-spline'
-import { Shield, Lock, ArrowRight, Menu, Moon, Sun, CheckCircle2, MessageCircle, Bell, ArrowUpRight } from 'lucide-react'
+import { Shield, Lock, ArrowRight, Menu, Moon, Sun, CheckCircle2, MessageCircle, Bell, ArrowUpRight, Compass, Radar } from 'lucide-react'
 
 function useTheme() {
   const [theme, setTheme] = useState(() => {
@@ -33,13 +32,13 @@ function Navbar({ theme, setTheme }) {
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-6 text-sm">
+          <nav className="hidden md:flex items-center gap-6 text-sm">
             <a className="text-slate-300 hover:text-white transition" href="#solutions">Solutions</a>
             <a className="text-slate-300 hover:text-white transition" href="#platform">Platform</a>
             <a className="text-slate-300 hover:text-white transition" href="#partners">Partners</a>
             <a className="text-slate-300 hover:text-white transition" href="#bot">CyberNews Bot</a>
             <a className="text-slate-300 hover:text-white transition" href="#contact">Contact</a>
-          </div>
+          </nav>
 
           <div className="flex items-center gap-2">
             <button
@@ -61,71 +60,102 @@ function Navbar({ theme, setTheme }) {
   )
 }
 
-function EarthHero() {
+function useScroll() {
   const [scroll, setScroll] = useState(0)
-  const containerRef = useRef(null)
-
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY || 0
-      setScroll(y)
-    }
+    const onScroll = () => setScroll(window.scrollY || 0)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+  return scroll
+}
 
-  // Fade Earth as user scrolls past 40vh
+function SpaceHero() {
+  const scroll = useScroll()
+
+  // Camera tilt and zoom for "from space" perspective
+  const tilt = Math.min(18, scroll * 0.02) // up to ~18deg
+  const zoom = 1 + Math.min(0.2, scroll / 3000) // slight dolly-in
   const fadeStart = 0
-  const fadeEnd = typeof window !== 'undefined' ? window.innerHeight * 0.6 : 600
+  const fadeEnd = typeof window !== 'undefined' ? window.innerHeight * 0.75 : 700
   const opacity = 1 - Math.min(1, Math.max(0, (scroll - fadeStart) / (fadeEnd - fadeStart)))
 
-  // Parallax translate for depth
-  const translateY = Math.min(0, -scroll * 0.1)
-  const rotate = scroll * 0.02
+  // Drift of stars and planet for depth parallax
+  const starsOffset = Math.round(scroll * 0.2)
+  const planetParallax = -scroll * 0.08
+  const rotation = scroll * 0.015
 
   return (
-    <section className="relative h-[90vh] min-h-[640px] overflow-hidden">
-      {/* Stars background */}
-      <div className="absolute inset-0 starfield" />
+    <section className="relative h-[95vh] min-h-[680px] overflow-hidden">
+      {/* Cinematic vignette */}
+      <div className="absolute inset-0 vignette z-[5]" />
 
-      {/* Huge Earth */}
+      {/* Stars background with slow drift */}
       <div
-        ref={containerRef}
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        style={{ opacity, transform: `translate(-50%, calc(-50% + ${translateY}px)) rotate(${rotate}deg)` }}
-      >
-        <div className="relative">
-          <div className="earth-mask">
+        className="absolute inset-0 starfield"
+        style={{ transform: `translateY(${starsOffset}px)` }}
+      />
+
+      {/* Aurora wash */}
+      <div className="absolute -inset-40 aurora" />
+
+      {/* 3D scene wrapper */}
+      <div className="absolute inset-0 perspective-1200">
+        <div
+          className="absolute left-1/2 top-1/2 preserve-3d -translate-x-1/2 -translate-y-1/2"
+          style={{
+            transform: `translate3d(-50%, calc(-50% + ${planetParallax}px), 0) rotateX(${tilt}deg) scale(${zoom})`,
+            opacity,
+          }}
+        >
+          {/* Earth body */}
+          <div className="relative">
+            <div className="earth-mask relative">
+              <div
+                className="h-[120vmin] w-[120vmin] rounded-full earth-rotate"
+                style={{
+                  backgroundImage:
+                    `radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,0) 62%, rgba(2,6,23,1) 100%), url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1600&auto=format&fit=crop')`,
+                  backgroundSize: 'cover',
+                  boxShadow: '0 0 160px rgba(16,185,129,0.30), inset -60px -60px 160px rgba(2,6,23,0.85)'
+                }}
+              />
+              {/* Subtle clouds layer */}
+              <div
+                className="absolute inset-0 rounded-full clouds-rotate"
+                style={{
+                  backgroundImage:
+                    `radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.0) 50%, rgba(255,255,255,0.05) 70%, transparent 80%), url('https://images.unsplash.com/photo-1760764541302-e3955fbc6b2b?ixid=M3w3OTkxMTl8MHwxfHNlYXJjaHwxfHxjZXJhbWljJTIwcG90dGVyeSUyMGhhbmRtYWRlfGVufDB8MHx8fDE3NjM0MTE5NzJ8MA&ixlib=rb-4.1.0&w=1600&auto=format&fit=crop&q=80')`,
+                  backgroundSize: 'cover',
+                }}
+              />
+            </div>
+            {/* Limb glow */}
             <div
-              className="h-[120vmin] w-[120vmin] rounded-full earth-rotate"
+              className="pointer-events-none absolute inset-0 rounded-full blur-3xl"
               style={{
-                backgroundImage: `radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,0) 65%, rgba(2,6,23,1) 100%), url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1600&auto=format&fit=crop')`,
-                backgroundSize: 'cover',
-                boxShadow: '0 0 120px rgba(16,185,129,0.25), inset -40px -40px 120px rgba(2,6,23,0.8)'
+                background:
+                  'radial-gradient(55% 55% at 50% 50%, rgba(16,185,129,0.25), rgba(16,185,129,0) 70%)',
               }}
             />
           </div>
-          {/* Atmospheric glow */}
-          <div className="pointer-events-none absolute inset-0 rounded-full blur-3xl" style={{
-            background: 'radial-gradient(60% 60% at 50% 50%, rgba(16,185,129,0.25), rgba(16,185,129,0) 70%)'
-          }} />
         </div>
       </div>
 
-      {/* Foreground content */}
+      {/* Foreground HUD and copy */}
       <div className="relative z-10 mx-auto max-w-7xl px-6 h-full flex items-center">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 text-brand px-3 py-1 text-xs mb-6">
-            <span className="inline-flex items-center gap-1"><Lock className="w-3.5 h-3.5"/> Zero-Trust Ready</span>
+            <span className="inline-flex items-center gap-1"><Lock className="w-3.5 h-3.5"/> Orbital Zero‑Trust</span>
             <span className="text-slate-400">•</span>
             <span className="inline-flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5"/> SOC2 Compliant</span>
           </div>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white">
-            Modern cybersecurity for a connected world
+            Observe, defend, and respond from space
           </h1>
           <p className="mt-5 text-lg text-slate-300 leading-relaxed max-w-xl">
-            A planetary‑scale defense layer: detect, isolate, and neutralize threats in seconds.
+            A planetary‑scale defense layer: real‑time telemetry, autonomous isolation, and rapid mitigation.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <a href="#contact" className="inline-flex items-center justify-center rounded-xl px-5 py-3 bg-brand text-slate-900 font-semibold shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:shadow-[0_0_40px_rgba(16,185,129,0.6)] transition">
@@ -135,6 +165,18 @@ function EarthHero() {
             <a href="#platform" className="inline-flex items-center justify-center rounded-xl px-5 py-3 border border-white/10 text-slate-200 hover:text-white hover:border-white/20 transition">
               Explore the platform
             </a>
+          </div>
+        </div>
+
+        {/* Minimal HUD elements on large screens */}
+        <div className="hidden lg:flex ml-auto items-center gap-3 text-slate-300/80">
+          <div className="rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 hud-grid scanlines">
+            <div className="text-xs uppercase tracking-wide flex items-center gap-2"><Radar className="w-4 h-4 text-brand"/> Orbital Telemetry</div>
+            <div className="mt-2 text-[10px] text-slate-400">Latency: 42ms • Coverage: 162 regions</div>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3">
+            <div className="text-xs uppercase tracking-wide flex items-center gap-2"><Compass className="w-4 h-4 text-brand"/> Trajectory</div>
+            <div className="mt-2 text-[10px] text-slate-400">Inclination: 51.6° • Apogee: 408km</div>
           </div>
         </div>
       </div>
@@ -159,18 +201,28 @@ function Features() {
   ]
 
   return (
-    <section id="platform" className="relative py-20">
+    <section id="platform" className="relative py-24">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(60%_60%_at_50%_100%,rgba(16,185,129,0.08),transparent_70%)]" />
       <div className="relative mx-auto max-w-7xl px-6">
+        <div className="flex items-end justify-between mb-10">
+          <div>
+            <h2 className="text-white font-semibold text-2xl">Mission‑grade platform</h2>
+            <p className="text-slate-400 text-sm mt-1">Designed like a ground‑station: modular, resilient, and always on.</p>
+          </div>
+          <a href="#contact" className="hidden sm:inline-flex items-center gap-2 text-brand hover:underline text-sm">Request a demo <ArrowUpRight className="w-3.5 h-3.5"/></a>
+        </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((f) => (
-            <div key={f.title} className="group rounded-2xl border border-white/10 bg-slate-900/50 p-6 hover:border-brand/40 transition">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-brand/15 text-brand">{f.icon}</div>
-                <h3 className="text-white font-semibold">{f.title}</h3>
+            <div key={f.title} className="group rounded-2xl border border-white/10 bg-slate-900/50 p-6 hover:border-brand/40 transition relative overflow-hidden">
+              <div className="absolute -inset-1 opacity-0 group-hover:opacity-100 transition bg-gradient-to-br from-brand/10 to-transparent blur-2xl"/>
+              <div className="relative">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-brand/15 text-brand">{f.icon}</div>
+                  <h3 className="text-white font-semibold">{f.title}</h3>
+                </div>
+                <p className="mt-3 text-slate-300 text-sm leading-relaxed">{f.desc}</p>
+                <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-brand/50 to-transparent opacity-0 group-hover:opacity-100 transition" />
               </div>
-              <p className="mt-3 text-slate-300 text-sm leading-relaxed">{f.desc}</p>
-              <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-brand/50 to-transparent opacity-0 group-hover:opacity-100 transition" />
             </div>
           ))}
         </div>
@@ -201,11 +253,10 @@ function Partners() {
     )},
   ], [])
 
-  // Duplicate to create seamless loop
   const row = [...logos, ...logos]
 
   return (
-    <section id="partners" className="py-16">
+    <section id="partners" className="py-20">
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-white font-semibold text-lg">Trusted by modern teams</h2>
@@ -240,7 +291,7 @@ function Partners() {
 
 function CyberNewsBot() {
   return (
-    <section id="bot" className="py-20">
+    <section id="bot" className="py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="relative overflow-hidden rounded-3xl border border-brand/30 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-10">
           <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-brand/30 via-emerald-400/10 to-transparent blur-2xl pointer-events-none" />
@@ -279,7 +330,6 @@ function CyberNewsBot() {
                   </div>
                   <p className="mt-4 text-slate-300">Scan to subscribe</p>
                   <div className="mt-3 inline-flex rounded-lg bg-white p-2">
-                    {/* Simple placeholder QR composed of squares */}
                     <div className="h-28 w-28 bg-[linear-gradient(90deg,#000_10px,transparent_10px),linear-gradient(#000_10px,transparent_10px)] [background-size:14px_14px]" />
                   </div>
                 </div>
@@ -295,7 +345,7 @@ function CyberNewsBot() {
 
 function CTA() {
   return (
-    <section id="contact" className="py-20">
+    <section id="contact" className="py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="relative overflow-hidden rounded-3xl border border-brand/30 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-10">
           <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-brand/30 via-emerald-400/10 to-transparent blur-2xl pointer-events-none" />
@@ -323,7 +373,7 @@ export default function App() {
       <Navbar theme={theme} setTheme={setTheme} />
 
       <main>
-        <EarthHero />
+        <SpaceHero />
         <Features />
         <Partners />
         <CyberNewsBot />
