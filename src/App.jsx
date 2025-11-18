@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Spline from '@splinetool/react-spline'
 import { Shield, Lock, ArrowRight, Menu, Moon, Sun, CheckCircle2, MessageCircle, Bell, ArrowUpRight } from 'lucide-react'
 
@@ -20,7 +20,7 @@ function useTheme() {
 
 function Navbar({ theme, setTheme }) {
   return (
-    <header className="fixed top-0 inset-x-0 z-[60]">
+    <header className="fixed top-0 inset-x-0 z-[80]">
       <div className="mx-auto max-w-7xl px-6 py-4">
         <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-900/60 dark:bg-slate-900/60 backdrop-blur supports-[backdrop-filter]:bg-slate-900/40 px-4 py-3">
           <div className="flex items-center gap-3">
@@ -61,93 +61,86 @@ function Navbar({ theme, setTheme }) {
   )
 }
 
-function ParallaxBackground() {
-  const [offset, setOffset] = useState(0)
+function EarthHero() {
+  const [scroll, setScroll] = useState(0)
+  const containerRef = useRef(null)
 
   useEffect(() => {
-    const onScroll = () => setOffset(window.scrollY || 0)
+    const onScroll = () => {
+      const y = window.scrollY || 0
+      setScroll(y)
+    }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Speeds for layers
-  const s1 = offset * 0.15
-  const s2 = offset * 0.3
-  const s3 = offset * 0.45
+  // Fade Earth as user scrolls past 40vh
+  const fadeStart = 0
+  const fadeEnd = typeof window !== 'undefined' ? window.innerHeight * 0.6 : 600
+  const opacity = 1 - Math.min(1, Math.max(0, (scroll - fadeStart) / (fadeEnd - fadeStart)))
+
+  // Parallax translate for depth
+  const translateY = Math.min(0, -scroll * 0.1)
+  const rotate = scroll * 0.02
 
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      {/* Grid dots */}
-      <div
-        className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.15)_1px,transparent_1px)] [background-size:24px_24px]"
-        style={{ transform: `translateY(${s1 * -1}px)` }}
-      />
+    <section className="relative h-[90vh] min-h-[640px] overflow-hidden">
+      {/* Stars background */}
+      <div className="absolute inset-0 starfield" />
 
-      {/* Brand glow blobs */}
+      {/* Huge Earth */}
       <div
-        className="absolute -top-40 -left-40 h-[520px] w-[520px] rounded-full blur-3xl"
-        style={{ background: 'radial-gradient(45% 45% at 50% 50%, rgba(16,185,129,0.35), rgba(16,185,129,0) 70%)', transform: `translateY(${s2}px)` }}
-      />
-      <div
-        className="absolute top-1/3 -right-40 h-[520px] w-[520px] rounded-full blur-3xl"
-        style={{ background: 'radial-gradient(45% 45% at 50% 50%, rgba(16,185,129,0.25), rgba(16,185,129,0) 70%)', transform: `translateY(${s3 * -1}px)` }}
-      />
-
-      {/* Vertical gradient vignette */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-transparent to-slate-950" />
-    </div>
-  )
-}
-
-function Hero() {
-  return (
-    <section className="relative pt-28 overflow-hidden">
-      <div className="absolute inset-0">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(16,185,129,0.15),transparent_70%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/20 to-slate-950" />
+        ref={containerRef}
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+        style={{ opacity, transform: `translate(-50%, calc(-50% + ${translateY}px)) rotate(${rotate}deg)` }}
+      >
+        <div className="relative">
+          <div className="earth-mask">
+            <div
+              className="h-[120vmin] w-[120vmin] rounded-full earth-rotate"
+              style={{
+                backgroundImage: `radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,0) 65%, rgba(2,6,23,1) 100%), url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1600&auto=format&fit=crop')`,
+                backgroundSize: 'cover',
+                boxShadow: '0 0 120px rgba(16,185,129,0.25), inset -40px -40px 120px rgba(2,6,23,0.8)'
+              }}
+            />
+          </div>
+          {/* Atmospheric glow */}
+          <div className="pointer-events-none absolute inset-0 rounded-full blur-3xl" style={{
+            background: 'radial-gradient(60% 60% at 50% 50%, rgba(16,185,129,0.25), rgba(16,185,129,0) 70%)'
+          }} />
+        </div>
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-6">
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
-          <div className="py-10">
-            <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 text-brand px-3 py-1 text-xs mb-6">
-              <span className="inline-flex items-center gap-1"><Lock className="w-3.5 h-3.5"/> Zero-Trust Ready</span>
-              <span className="text-slate-400">•</span>
-              <span className="inline-flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5"/> SOC2 Compliant</span>
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-              Modern cybersecurity for a connected world
-            </h1>
-            <p className="mt-5 text-lg text-slate-300 leading-relaxed">
-              Protect identities, data, and infrastructure with an AI-augmented security platform. Real-time threat detection, automated response, and frictionless compliance.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <a href="#contact" className="inline-flex items-center justify-center rounded-xl px-5 py-3 bg-brand text-slate-900 font-semibold shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:shadow-[0_0_40px_rgba(16,185,129,0.6)] transition">
-                Get started
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </a>
-              <a href="#platform" className="inline-flex items-center justify-center rounded-xl px-5 py-3 border border-white/10 text-slate-200 hover:text-white hover:border-white/20 transition">
-                Explore the platform
-              </a>
-            </div>
-
-            <div className="mt-10 grid grid-cols-3 gap-6">
-              {["99.99% uptime", "24/7 monitoring", "1M+ identities"].map((item) => (
-                <div key={item} className="rounded-xl border border-white/10 bg-slate-900/40 p-4">
-                  <p className="text-sm text-slate-400">{item}</p>
-                </div>
-              ))}
-            </div>
+      {/* Foreground content */}
+      <div className="relative z-10 mx-auto max-w-7xl px-6 h-full flex items-center">
+        <div className="max-w-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 text-brand px-3 py-1 text-xs mb-6">
+            <span className="inline-flex items-center gap-1"><Lock className="w-3.5 h-3.5"/> Zero-Trust Ready</span>
+            <span className="text-slate-400">•</span>
+            <span className="inline-flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5"/> SOC2 Compliant</span>
           </div>
-
-          <div className="relative h-[420px] sm:h-[520px] lg:h-[560px] rounded-3xl border border-white/10 bg-slate-900/50 overflow-hidden">
-            <Spline scene="https://prod.spline.design/mwBbOy4jrazr59EO/scene.splinecode" style={{ width: '100%', height: '100%' }} />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white">
+            Modern cybersecurity for a connected world
+          </h1>
+          <p className="mt-5 text-lg text-slate-300 leading-relaxed max-w-xl">
+            A planetary‑scale defense layer: detect, isolate, and neutralize threats in seconds.
+          </p>
+          <div className="mt-8 flex flex-col sm:flex-row gap-3">
+            <a href="#contact" className="inline-flex items-center justify-center rounded-xl px-5 py-3 bg-brand text-slate-900 font-semibold shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:shadow-[0_0_40px_rgba(16,185,129,0.6)] transition">
+              Get started
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </a>
+            <a href="#platform" className="inline-flex items-center justify-center rounded-xl px-5 py-3 border border-white/10 text-slate-200 hover:text-white hover:border-white/20 transition">
+              Explore the platform
+            </a>
           </div>
         </div>
       </div>
+
+      {/* Bottom gradient fade into page */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-slate-950" />
     </section>
   )
 }
@@ -327,11 +320,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 dark:text-slate-100">
-      <ParallaxBackground />
       <Navbar theme={theme} setTheme={setTheme} />
 
       <main>
-        <Hero />
+        <EarthHero />
         <Features />
         <Partners />
         <CyberNewsBot />
